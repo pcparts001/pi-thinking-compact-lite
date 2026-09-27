@@ -5,9 +5,12 @@ way out, so a long session stops paying for reasoning it no longer needs.
 
 > **Only the zai route benefits.** On DeepSeek-family routes the server ignores thinking fields
 > entirely, so the extension changes nothing there. DeepSeek-family APIs let you keep thinking
-> history out of the context; the zai Coding Plan does not (`clear_thinking` cannot turn it off —
-> "Preserved Thinking" is always on). Had zai allowed thinking to be filtered the way DeepSeek does,
-> there would have been no reason to write this extension at all.
+> history out of the context; the zai Coding Plan does not. z.ai's own docs describe "Preserved
+> Thinking" as **default ON on the Coding Plan endpoint and default OFF on the standard API
+> endpoint** ([thinking-mode](https://docs.z.ai/guides/capabilities/thinking-mode)); measured here,
+> sending `clear_thinking: true` to the Coding Plan endpoint is ignored as well (prompt tokens
+> unchanged, with pi out of the loop entirely — see Requirements). Had zai allowed thinking to be
+> filtered the way DeepSeek does, there would have been no reason to write this extension at all.
 
 No extra service, no judgements, no network calls of its own: one deterministic rule, applied
 idempotently to the pristine transcript pi re-delivers on every request — which is exactly what
@@ -144,11 +147,13 @@ export THINKING_COMPACT_MODELS="zai/glm-5.3,zai/glm-5.3-flash"
 
 ### Where this has any effect (the zai route)
 
-Measured on the wire by comparing request token counts with and without thinking history:
+Measured on the wire by comparing request token counts with and without thinking history (the row
+marked *docs* comes from z.ai's documentation rather than from a measurement here):
 
 | Route | Does thinking history reach the model's context? | This extension |
 |---|---|---|
-| **zai** Coding Plan (glm-5.3 / glm-5.3-flash) | **Yes** — `reasoning_content` is context-counted and billed (measured Δ+201…250 tok). "Preserved Thinking" is always on there; `clear_thinking` cannot turn it off | **the one route it serves** |
+| **zai** Coding Plan (glm-5.3 / glm-5.3-flash) | **Yes** — `reasoning_content` is context-counted and billed (measured Δ+201…250 tok). "Preserved Thinking" is **default ON** on this endpoint (z.ai docs); measured, `clear_thinking: true` is ignored there too | **the one route it serves** |
+| **zai** standard API (`paas/v4`, metered) *docs* | No — "Preserved Thinking" is **default OFF** on the standard API endpoint, so thinking history is not carried | nothing to save |
 | DeepSeek official API | No — `reasoning`, `reasoning_content` and `reasoning_details` are all ignored (measured Δ0 on both `deepseek-chat` and `deepseek-reasoner`) | nothing to save |
 | Command Code proxy (DeepSeek / GLM) | No (measured Δ0) | nothing to save |
 
