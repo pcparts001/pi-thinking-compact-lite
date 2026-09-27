@@ -41,24 +41,25 @@ This removes the entry from `settings.json` and deletes the cloned directory.
 
 ```sh
 git clone https://github.com/pcparts001/pi-thinking-compact-lite.git \
-  ~/.pi/agent/extensions/pi-thinking-compact
+  ~/.pi/agent/extensions/pi-thinking-compact-lite
 ```
 
 `package.json` declares the entry point via `pi.extensions` (and pi would also find `index.ts` at the
 repository root), so no file renaming is required. Placed this way the extension is only a few tens of
-KB, because nothing runs `npm install`.
+KB, because nothing runs `npm install`. The directory name is yours to choose and has no effect on the
+runtime: the command is `/thinking-compact` either way.
 
 **Uninstall** — a manual clone has no `settings.json` entry, so `pi remove` reports
-`No matching package found` and changes nothing. Delete the directory instead:
+`No matching package found` (pi 0.87.1) and changes nothing. Delete the directory instead:
 
 ```sh
-rm -rf ~/.pi/agent/extensions/pi-thinking-compact
+rm -rf ~/.pi/agent/extensions/pi-thinking-compact-lite
 ```
 
 **Update** with `git pull` (this clone is not managed by `pi update`):
 
 ```sh
-git -C ~/.pi/agent/extensions/pi-thinking-compact pull
+git -C ~/.pi/agent/extensions/pi-thinking-compact-lite pull
 ```
 
 Either way, the allowlist must be set or **nothing happens at all** (see Requirements).
@@ -92,7 +93,7 @@ One rule, applied to the outgoing view of every LLM request:
 
 Pi re-delivers the **pristine (untransformed) transcript** at every request and uses the handler's
 result for that request only; the session is never rewritten
-(`pi-agent-core/dist/agent-loop.js`, `streamAssistantResponse()`). This extension therefore re-applies
+(`pi-agent-core/dist/agent-loop.js`, `streamAssistantResponse()` — pi 0.87.1). This extension therefore re-applies
 the *same deterministic rule* to the *same pristine input* on every request — the same input plus the
 same parameters always produce byte-identical output, which is precisely the condition for the
 provider prefix cache to keep hitting while thinking shrinks.
@@ -102,8 +103,10 @@ stable from its first send onward.
 
 ### Measured results
 
-All numbers come from a re-runnable replay benchmark over a **real 150-thinking-block session** on the
-live zai route (glm-5.3-flash), from the recorded JSONL of that run.
+All numbers below are the author's own measurements, from a replay benchmark run over a **real
+150-thinking-block session** on the live zai route (glm-5.3-flash), recorded to JSONL. That session,
+the replay script and the result files are **not shipped in this package** — treat these as reported
+evidence, not as a benchmark you can re-run from what you install here.
 
 **Replay, 30 aligned requests:**
 
@@ -123,7 +126,7 @@ live zai route (glm-5.3-flash), from the recorded JSONL of that run.
 **Prefix-cache safety (the design's core claim):** the tail requests keep a 96–100% cache hit in every
 condition — removing thinking never rewrote the outgoing prefix.
 
-**Live headless A/B (`pi -p`, deterministic tasks):** task quality was unchanged in every arm
+**Live headless A/B (`pi -p`, deterministic tasks, the author's fixtures):** task quality was unchanged in every arm
 (5/5, 12/12 on the file-reading fixtures; 8.0–8.3/10 on a large-output report task). On *short*
 conversations the input saving (−3.5…−8.7%) is largely offset by output/reasoning rising +13…35% (the
 model re-derives what was cut); the saving compounds on long sessions, which is where thinking
@@ -142,7 +145,7 @@ per segment (`zai/*`, `zai/glm-5.3-flash`, `*/glm-5.3*`). An empty string is a k
 stops, including for models that were previously allowed.
 
 ```sh
-export THINKING_COMPACT_MODELS="zai/glm-5.3,zai/glm-5.3-flash"
+export THINKING_COMPACT_MODELS="zai/glm-5.3-flash"
 ```
 
 ### Where this has any effect (the zai route)
@@ -178,6 +181,10 @@ string work.
 This extension is **experimental software** and is provided "as is", without warranty of any kind. The
 author assumes no responsibility whatsoever for any damage or loss arising from its use, including
 billing changes on your model provider or any effect on answer quality.
+
+Behavior described in this README was verified against **pi 0.87.1**. pi internals — the extension
+event names, `settings.json`, `hideThinkingBlock`, the `pi.extensions` entry point, and the CLI
+messages quoted above — can change between releases, and this extension may need updating when they do.
 
 ## Usage
 
