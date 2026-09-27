@@ -3,9 +3,15 @@
 **Uniform thinking compaction** for Pi Agent — head-truncate (or drop) every thinking block on the
 way out, so a long session stops paying for reasoning it no longer needs.
 
-No Jev, no judgements, no network calls of its own: one deterministic rule, applied idempotently to
-the pristine transcript pi re-delivers on every request — which is exactly what keeps the provider
-prefix cache hitting.
+> **Only the zai route benefits.** On DeepSeek-family routes the server ignores thinking fields
+> entirely, so the extension changes nothing there. DeepSeek-family APIs let you keep thinking
+> history out of the context; the zai Coding Plan does not (`clear_thinking` cannot turn it off —
+> "Preserved Thinking" is always on). Had zai allowed thinking to be filtered the way DeepSeek does,
+> there would have been no reason to write this extension at all.
+
+No extra service, no judgements, no network calls of its own: one deterministic rule, applied
+idempotently to the pristine transcript pi re-delivers on every request — which is exactly what
+keeps the provider prefix cache hitting.
 
 > **⚠️ Experimental software.** This extension is experimental and is provided "as is", without
 > warranty of any kind. **The author assumes no responsibility whatsoever** for any damage or loss
@@ -68,7 +74,7 @@ wrote) is already in the transcript.
 
 One rule, applied to the outgoing view of every LLM request:
 
-| Action (`THINKING_COMPACT_ACTION`) | What goes on the wire |
+| Behavior | What goes on the wire |
 |---|---|
 | `truncate` (default) | head excerpt (default 600 chars ≈ 150 tok) + a marker, for every thinking block longer than the excerpt |
 | `drop` | thinking blocks are omitted entirely |
@@ -151,8 +157,8 @@ tight.
 
 ### No API keys
 
-Unlike its Jev-based siblings, this extension makes **no calls of its own**. It needs no key and adds
-no latency beyond the local string work.
+This extension makes **no calls of its own**. It needs no key and adds no latency beyond the local
+string work.
 
 ## Privacy & data flow
 
@@ -199,11 +205,8 @@ request messages
 | Variable | Default | Description |
 |---|---|---|
 | `THINKING_COMPACT_MODELS` | *(unset = off)* | **required to do anything.** Comma-separated `provider/id` allowlist with per-segment `*` wildcards. Unset = fully off; empty = kill switch |
-| `THINKING_COMPACT_ACTION` | `truncate` | `truncate` (head excerpt) or `drop` (omit the block) |
-| `THINKING_COMPACT_CHARS` | `600` | excerpt length in characters (≈150 tok) |
 | `THINKING_COMPACT_LOG` | `~/.pi/agent/thinking-compact/runs.jsonl` | run log (`off` disables). Hashes and lengths only |
 | `THINKING_COMPACT_NOTIFY` | on | `off` disables the one-line UI notice |
-| `THINKING_COMPACT_DUMP` | — | debug: write the outgoing payload (after this extension's rewrite) to a file. **Contains your full prompt — never commit it** |
 
 ## How it works
 
