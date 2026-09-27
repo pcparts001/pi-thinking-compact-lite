@@ -23,9 +23,6 @@
     "logger.ts",
     "README.md"
   ],
-  "peerDependencies": {
-    "@earendil-works/pi-coding-agent": "*"
-  },
   "pi": {
     "extensions": [
       "./index.ts"

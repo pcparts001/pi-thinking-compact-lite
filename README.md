@@ -37,6 +37,11 @@ pi remove https://github.com/pcparts001/pi-thinking-compact-lite
 
 This removes the entry from `settings.json` and deletes the cloned directory.
 
+This package declares **no dependencies and no peer dependencies** — the extension imports only types
+from `@earendil-works/pi-coding-agent`, and pi resolves its own API at runtime — so `pi install`
+downloads just the repository files. (Declaring pi as a peer dependency would instead make npm install
+a second, ~400 MB copy of pi inside the clone.)
+
 ### Option 2: manual placement
 
 ```sh
