@@ -154,7 +154,7 @@ marked *docs* comes from z.ai's documentation rather than from a measurement her
 |---|---|---|
 | **zai** Coding Plan (glm-5.3 / glm-5.3-flash) | **Yes** — `reasoning_content` is context-counted and billed (measured Δ+201…250 tok). "Preserved Thinking" is **default ON** on this endpoint (z.ai docs); measured, `clear_thinking: true` is ignored there too | **the one route it serves** |
 | **zai** standard API (`paas/v4`, metered) *docs* | No — "Preserved Thinking" is **default OFF** on the standard API endpoint, so thinking history is not carried | nothing to save |
-| DeepSeek official API | No — `reasoning`, `reasoning_content` and `reasoning_details` are all ignored (measured Δ0 on both `deepseek-chat` and `deepseek-reasoner`) | nothing to save |
+| DeepSeek official API | No (measured Δ0 on both `deepseek-chat` and `deepseek-reasoner`) | nothing to save |
 | Command Code proxy (DeepSeek / GLM) | No (measured Δ0) | nothing to save |
 
 On the routes in the lower rows this extension still runs, but it changes nothing — keep the allowlist
