@@ -1,0 +1,22 @@
+# agent instructions (must never be committed)
+CLAUDE.md
+AGENTS.md
+
+# secrets / keys
+.env
+.env.*
+
+# dependencies (this extension has none, but just in case)
+node_modules/
+package-lock.json
+
+# logs / scratch
+*.log
+# run logs (runs.jsonl) and any other JSONL data: may carry cwd / session id / block hashes
+*.jsonl
+.DS_Store
+
+# THINKING_COMPACT_DUMP output: the real request body, which contains the full system
+# prompt and the prompt text. Never commit it.
+**/*dump*.json
+**/*payload*.json

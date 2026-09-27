@@ -1,0 +1,34 @@
+{
+  "name": "pi-thinking-compact-lite",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Uniform thinking compaction for Pi Agent — head-truncate or drop every thinking block before it is sent, without ever rewriting an already-sent prefix",
+  "type": "module",
+  "license": "MIT",
+  "author": "pcparts001",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "extension",
+    "thinking",
+    "compaction",
+    "context"
+  ],
+  "engines": {
+    "node": ">=20.3"
+  },
+  "files": [
+    "index.ts",
+    "core.ts",
+    "logger.ts",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}
