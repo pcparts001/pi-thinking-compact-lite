@@ -89,6 +89,11 @@ export default function thinkingCompact(pi: ExtensionAPI) {
   /** hashes already reported (notice/log once per block identity, not per request) */
   const seen = new Set<string>();
   let savedTotal = 0;
+  /** cumulative per-request compaction: every request's applied total (seen blocks included).
+   *  This is the number the session's ↑input total actually shrinks by — pi re-delivers the
+   *  pristine transcript each time, so the saving repeats on every request. */
+  let effectiveSavedTotal = 0;
+  let requestCount = 0;
 
   const gated = (ctx: ExtensionContext | undefined): boolean =>
     enabled && modelAllowed(modelLabel(ctx), allowlist);
@@ -112,6 +117,12 @@ export default function thinkingCompact(pi: ExtensionAPI) {
     if (!blocks.length) return undefined;
 
     const { messages: out, applied } = applyToAll(messages, config.action, config.truncateChars);
+
+    // Per-request compaction: applied covers EVERY block present this request (fresh or seen),
+    // so summing it per request tracks what the outgoing payload actually loses each time.
+    const effectiveNow = applied.reduce((s, a) => s + a.savedChars, 0);
+    effectiveSavedTotal += effectiveNow;
+    requestCount += 1;
 
     // First-seen bookkeeping: notice + log once per content hash (kept-short blocks are
     // recorded too — they were seen and the rule did not shrink them)
@@ -149,6 +160,9 @@ export default function thinkingCompact(pi: ExtensionAPI) {
       blocks: applied.length,
       savedCharsNow: savedNow,
       savedCharsTotal: savedTotal,
+      effectiveSavedCharsNow: effectiveNow,
+      effectiveSavedCharsTotal: effectiveSavedTotal,
+      requests: requestCount,
     });
     if (JSON.stringify(out) === JSON.stringify(messages)) return undefined; // nothing shrank (all kept-short)
     return { messages: out };
@@ -170,6 +184,8 @@ export default function thinkingCompact(pi: ExtensionAPI) {
     allowlist = resolveAllowedModels(process.env[MODELS_ENV]);
     seen.clear();
     savedTotal = 0;
+    effectiveSavedTotal = 0;
+    requestCount = 0;
   });
 
   pi.registerCommand("thinking-compact", {
@@ -187,6 +203,7 @@ export default function thinkingCompact(pi: ExtensionAPI) {
         `model: ${label ?? "?"} | allowlist: ${allowlist ? allowlist.join(", ") || "(empty = off)" : "(unset = off)"}`,
         `allowed: ${modelAllowed(label, allowlist) ? "yes" : "no"} | action: ${config.action} | chars: ${config.truncateChars}`,
         `blocks seen: ${seen.size} | saved so far: ~${fmtChars(savedTotal)} chars (~${approxTokens(savedTotal)} tok)`,
+        `effective: ~${fmtChars(effectiveSavedTotal)} chars (~${approxTokens(effectiveSavedTotal)} tok) across ${requestCount} request(s) — per-request sum`,
         `log: ${config.logPath ?? "off"}`,
       ];
       if (ctx.hasUI) ctx.ui.notify(lines.join("\n"), "info");

@@ -182,6 +182,20 @@ string work.
 | **Written locally** | `~/.pi/agent/thinking-compact/runs.jsonl`: timestamp, cwd, session id, model, block **hash**, block **length**, action, and characters saved. **Thinking bodies and prompt text are never written.** Disable with `THINKING_COMPACT_LOG=off` |
 | **Never touched** | the session file, the transcript, the UI, images/attachments |
 
+### Reading the two saved counters
+
+`/thinking-compact` reports two different savings:
+
+- **saved so far** — cumulative compaction counted **once per block identity**. This is how much
+  lighter the *current* history is than the pristine transcript (the "one-block-one-count" sum).
+- **effective** — the **per-request sum**: pi re-delivers the pristine transcript on every request,
+  so the compaction repeats each time. This counter adds up every request's full saving (seen
+  blocks included), which is the order of magnitude by which the session's cumulative ↑ input
+  total actually shrinks.
+
+Example: 8 blocks truncated (~1.3k tok) over 20 requests → `saved so far ≈ 1.3k tok` but
+`effective ≈ 15–20k tok`, because the history was already carrying most blocks on most requests.
+
 ## Experimental — no warranty
 
 This extension is **experimental software** and is provided "as is", without warranty of any kind. The
@@ -215,7 +229,7 @@ request messages
 
 | Command | Behavior | Gate |
 |---|---|---|
-| `/thinking-compact` | show whether the extension is enabled, the current model, the allowlist, whether the model is allowed, the action and excerpt size, how many block identities were seen, how many characters were saved, and the log path | — |
+| `/thinking-compact` | show whether the extension is enabled, the current model, the allowlist, whether the model is allowed, the action and excerpt size, how many block identities were seen, how many characters were saved, the effective per-request sum (see below), and the log path | — |
 | `/thinking-compact on` / `off` | toggle. Off stops transforming immediately; re-enabling rewrites the prefix once (see Known limitations) | — |
 
 ## Environment variables
